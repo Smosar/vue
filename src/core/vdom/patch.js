@@ -70,7 +70,7 @@ function createKeyToOldIdx (children, beginIdx, endIdx) {
 export function createPatchFunction (backend) {
   let i, j
   const cbs = {}
-
+  // 之前传入的就是export const patch: Function = createPatchFunction({ nodeOps, modules })
   const { modules, nodeOps } = backend
 
   for (i = 0; i < hooks.length; ++i) {

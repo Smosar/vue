@@ -21,6 +21,8 @@ import {
 export let activeInstance: any = null
 export let isUpdatingChildComponent: boolean = false
 
+// restoreActiveInstance 是一个函数，用于还原之前设置的活动 Vue 实例（active instance）。
+// 通常在某些特定的操作后，需要将活动实例恢复为之前的状态，以确保接下来的代码正确处理活动实例
 export function setActiveInstance(vm: Component) {
   const prevActiveInstance = activeInstance
   activeInstance = vm
@@ -58,18 +60,24 @@ export function initLifecycle (vm: Component) {
 export function lifecycleMixin (Vue: Class<Component>) {
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
+    // 组件更新时才有意义，初次渲染下面两行代码不需要看
     const prevEl = vm.$el
     const prevVnode = vm._vnode
+    // restoreActiveInstance 是一个函数，用于还原之前设置的活动 Vue 实例（active instance）。
+    // 通常在某些特定的操作后，需要将活动实例恢复为之前的状态，以确保接下来的代码正确处理活动实例
     const restoreActiveInstance = setActiveInstance(vm)
     vm._vnode = vnode
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
-    if (!prevVnode) {
+    if (!prevVnode) { // 是否有上一个虚拟节点
       // initial render
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates
-      vm.$el = vm.__patch__(prevVnode, vnode)
+      // vm.$el 是 Vue 实例的根 DOM 元素，是实际渲染到页面的元素。
+      // vm.__patch__ 是 Vue 内部的方法，用于将虚拟 DOM 更新到真实 DOM 的过程。这个方法是 Vue 的核心之一，
+      // 实现了虚拟 DOM 的更新和渲染算法。
+      vm.$el = vm.__patch__(prevVnode, vnode) // 将最新的虚拟 DOM 更新到实际的页面上，以反映出数据的变化
     }
     restoreActiveInstance()
     // update __vue__ reference
@@ -138,12 +146,14 @@ export function lifecycleMixin (Vue: Class<Component>) {
   }
 }
 
+// mountComponent 挂载组件
 export function mountComponent (
   vm: Component,
   el: ?Element,
   hydrating?: boolean
 ): Component {
   vm.$el = el
+  // 如果new Vue中options里没有render方法，就执行以下方法，一般情况下是有的
   if (!vm.$options.render) {
     vm.$options.render = createEmptyVNode
     if (process.env.NODE_ENV !== 'production') {
@@ -164,10 +174,12 @@ export function mountComponent (
       }
     }
   }
-  callHook(vm, 'beforeMount')
+  callHook(vm, 'beforeMount') // 调用生命周期钩子
 
+  // updateComponent -- 用于进行渲染的函数
   let updateComponent
   /* istanbul ignore if */
+  // 主要判断是不是生产环境并且有没有性能优化配置，
   if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
     updateComponent = () => {
       const name = vm._name
@@ -176,7 +188,7 @@ export function mountComponent (
       const endTag = `vue-perf-end:${id}`
 
       mark(startTag)
-      const vnode = vm._render()
+      const vnode = vm._render() // 生成虚拟节点 - 看一下vm._render()如何将dom转为Vdom
       mark(endTag)
       measure(`vue ${name} render`, startTag, endTag)
 
@@ -187,13 +199,21 @@ export function mountComponent (
     }
   } else {
     updateComponent = () => {
+      // 这段代码用于更新 Vue 实例的视图。它先通过 _render() 方法将模板渲染为虚拟 DOM，
+      // 然后将渲染得到的虚拟 DOM 与之前的虚拟 DOM 进行对比，并更新真实 DOM，以更新用户界面。
+      // hydrating 参数用于在服务端渲染时，处理客户端与服务端的 VNode 一致性问题。
+      // 一般情况下，在客户端渲染时，hydrating 参数是 undefined 或 false
       vm._update(vm._render(), hydrating)
     }
   }
 
+  // 我们将其设置为vm_观察程序的构造函数中的观察程序
+  // 因为观察者的初始补丁可能会调用$forceUpdate（例如在child内部
+  // 组件的挂载钩子），它依赖于vm_已定义观察程序
   // we set this to vm._watcher inside the watcher's constructor
   // since the watcher's initial patch may call $forceUpdate (e.g. inside child
   // component's mounted hook), which relies on vm._watcher being already defined
+  // 当watcher发现有变化时，执行updateComponent
   new Watcher(vm, updateComponent, noop, {
     before () {
       if (vm._isMounted && !vm._isDestroyed) {

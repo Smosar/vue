@@ -14,6 +14,7 @@ let uid = 0
 
 export function initMixin (Vue: Class<Component>) {
   Vue.prototype._init = function (options?: Object) {
+    // 这里的this就是vue实例
     const vm: Component = this
     // a uid
     vm._uid = uid++
@@ -36,6 +37,7 @@ export function initMixin (Vue: Class<Component>) {
       initInternalComponent(vm, options)
     } else {
       vm.$options = mergeOptions(
+        // 这里的 vm.constructo 就是 Vue
         resolveConstructorOptions(vm.constructor),
         options || {},
         vm
@@ -64,7 +66,7 @@ export function initMixin (Vue: Class<Component>) {
       mark(endTag)
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
-
+    // $mount 是做了挂载处理
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
     }
@@ -92,6 +94,7 @@ export function initInternalComponent (vm: Component, options: InternalComponent
 
 export function resolveConstructorOptions (Ctor: Class<Component>) {
   let options = Ctor.options
+  // 如果传入vue，vue是没有super的，所以如果传入vue，就没有做任何处理
   if (Ctor.super) {
     const superOptions = resolveConstructorOptions(Ctor.super)
     const cachedSuperOptions = Ctor.superOptions

@@ -33,24 +33,29 @@ export function createElement (
   normalizationType: any,
   alwaysNormalize: boolean
 ): VNode | Array<VNode> {
+  // isPrimitive - 判断是不是原始值
   if (Array.isArray(data) || isPrimitive(data)) {
-    normalizationType = children
+    // 做了一个参数处理，给参数挪了一位
+    normalizationType = children 
     children = data
     data = undefined
   }
   if (isTrue(alwaysNormalize)) {
-    normalizationType = ALWAYS_NORMALIZE
+    normalizationType = ALWAYS_NORMALIZE // ALWAYS_NORMALIZE = 2
   }
   return _createElement(context, tag, data, children, normalizationType)
 }
 
 export function _createElement (
-  context: Component,
+  context: Component, // 这个类型是flow定义的类型，可以去flow/components.js里看一下
   tag?: string | Class<Component> | Function | Object,
   data?: VNodeData,
   children?: any,
   normalizationType?: number
 ): VNode | Array<VNode> {
+  // __ob__是判断是不是响应式数据
+  // 防止在渲染过程中直接使用已经被观察的数据对象作为虚拟节点数据，因为这可能会导致意外的数据变更。
+  // 在渲染时，应该始终创建一个新的虚拟节点数据对象，以确保数据的正确性和一致性
   if (isDef(data) && isDef((data: any).__ob__)) {
     process.env.NODE_ENV !== 'production' && warn(
       `Avoid using observed data object as vnode data: ${JSON.stringify(data)}\n` +
@@ -96,6 +101,9 @@ export function _createElement (
   if (typeof tag === 'string') {
     let Ctor
     ns = (context.$vnode && context.$vnode.ns) || config.getTagNamespace(tag)
+    // isReservedTag 是 Vue.js 内部的一个方法，用于检查给定的标签名是否是一个保留的标签。
+    // 在 Vue.js 中，保留的标签是指那些具有特殊含义的标签，比如常用的 HTML 标签
+    // 如 div、span、p、a、img 等。这些标签在 Vue 模板中使用时会被当作普通的标签处理，而不会被认为是组件。
     if (config.isReservedTag(tag)) {
       // platform built-in elements
       if (process.env.NODE_ENV !== 'production' && isDef(data) && isDef(data.nativeOn) && data.tag !== 'component') {

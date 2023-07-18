@@ -21,7 +21,7 @@ export function isFalse (v: any): boolean %checks {
 }
 
 /**
- * Check if value is primitive.
+ * Check if value is primitive（原始的）.
  */
 export function isPrimitive (value: any): boolean %checks {
   return (
@@ -236,6 +236,7 @@ export function extend (to: Object, _from: ?Object): Object {
 }
 
 /**
+ * 将属性混合到目标对象中。浅拷贝
  * Merge an Array of Objects into a single Object.
  */
 export function toObject (arr: Array<any>): Object {

@@ -125,6 +125,7 @@ function initData (vm: Component) {
   }
   // proxy data on instance
   const keys = Object.keys(data)
+  // 判断props和methods中有没有相同属性的东西
   const props = vm.$options.props
   const methods = vm.$options.methods
   let i = keys.length

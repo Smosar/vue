@@ -53,7 +53,12 @@ export function tagName (node: Element): string {
 export function setTextContent (node: Node, text: string) {
   node.textContent = text
 }
-
+/**
+ * 该函数 setStyleScope 用于设置样式作用域，通常用于 Vue.js 中的样式隔离。
+    在 Vue.js 中，为了避免全局样式影响到组件的样式，可以通过将样式作用域限定在组件范围内，防止样式泄漏和冲突。
+ * 在 Vue.js 的单文件组件中，通常会使用类似于 scoped 或 module 的属性来声明组件的样式作用域。
+    然后，setStyleScope 函数可以将这个作用域标识应用到组件的根 DOM 元素上，从而限制样式的生效范围。
+ */
 export function setStyleScope (node: Element, scopeId: string) {
   node.setAttribute(scopeId, '')
 }
