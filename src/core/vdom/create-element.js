@@ -116,6 +116,10 @@ export function _createElement (
         config.parsePlatformTagName(tag), data, children,
         undefined, undefined, context
       )
+      /**
+       *  data是Vue 组件的 VNode 数据
+       *  resolveAsset 用于解析 tag 对应的组件构造函数
+       */
     } else if ((!data || !data.pre) && isDef(Ctor = resolveAsset(context.$options, 'components', tag))) {
       // component
       vnode = createComponent(Ctor, data, context, children, tag)

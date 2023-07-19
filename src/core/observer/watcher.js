@@ -98,12 +98,19 @@ export default class Watcher {
 
   /**
    * Evaluate the getter, and re-collect dependencies.
+   * 这段代码是 Watcher 类的 get 方法，用于获取依赖的值。
+   * 它会调用计算属性或监听器的 getter 函数，捕获可能的异常并进行处理。
+   * 在获取值后，根据是否是深度监听的观察者，进行相应的处理。
+   * 最后返回获取到的依赖的值 value。这个 get 方法是 Vue.js 响应式系统中 Watcher 执行依赖收集的关键部分。
    */
   get () {
-    pushTarget(this)
+    // 将当前 Watcher 实例压入全局的依赖栈 Dep.target 中，标记当前 Watcher 为正在执行的观察者。
+    pushTarget(this)  
     let value
     const vm = this.vm
     try {
+      // 调用计算属性或监听器的 getter 函数（this.getter），并将 Vue 实例作为上下文 (this) 传递给 getter 函数。
+      // 此处的 this.getter 是计算属性的计算函数或监听器的回调函数。
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -114,10 +121,15 @@ export default class Watcher {
     } finally {
       // "touch" every property so they are all tracked as
       // dependencies for deep watching
+      // 如果 this.deep 为真值，说明当前 Watcher 是一个深度监听的观察者，
+      // 需要对获取到的值 value 进行深度遍历，以确保所有属性都被追踪为依赖。
+      // 这里调用 traverse(value) 函数，对获取到的值 value 进行深度遍历。
       if (this.deep) {
         traverse(value)
       }
+      // 将当前 Watcher 从依赖栈 Dep.target 中弹出，表示当前 Watcher 不再是正在执行的观察者。
       popTarget()
+      // 清理依赖。这是 Watcher 中的一个方法，用于移除无效的依赖，以确保依赖关系的正确性。
       this.cleanupDeps()
     }
     return value

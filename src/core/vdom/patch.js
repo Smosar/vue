@@ -30,6 +30,15 @@ import {
 
 export const emptyNode = new VNode('', {}, [])
 
+// 代表 Vue.js 中虚拟 DOM 模块的钩子函数（hook）。在 Vue.js 的虚拟 DOM 架构中，这些钩子函数是用于在不同的生命周期阶段执行特定的操作。
+// 每个钩子函数负责处理特定的任务，以确保虚拟 DOM 的正确更新和渲染。
+/**
+ * create: 当虚拟 DOM 节点被创建时触发，用于执行一些初始化操作。
+ * activate: 当虚拟 DOM 节点被插入到 DOM 中时触发，用于处理插入节点时的任务。
+ * update: 当虚拟 DOM 节点被更新时触发，用于处理节点属性和内容的更新。
+ * remove: 当虚拟 DOM 节点被移除时触发，用于执行移除节点时的任务。
+ * destroy: 当虚拟 DOM 节点被销毁时触发，用于执行清理和释放资源的操作
+ */
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 
 function sameVnode (a, b) {
@@ -72,7 +81,8 @@ export function createPatchFunction (backend) {
   const cbs = {}
   // 之前传入的就是export const patch: Function = createPatchFunction({ nodeOps, modules })
   const { modules, nodeOps } = backend
-
+  // 遍历虚拟 DOM 钩子函数数组 hooks 和模块数组 modules，将每个模块中定义的对应钩子函数收集到 cbs 对象中。
+  // 这个 cbs 对象最终存储了每个钩子函数的回调，以便在后续的虚拟 DOM 更新过程中执行相应的操作，实现对虚拟 DOM 的灵活扩展和处理
   for (i = 0; i < hooks.length; ++i) {
     cbs[hooks[i]] = []
     for (j = 0; j < modules.length; ++j) {
@@ -141,6 +151,7 @@ export function createPatchFunction (backend) {
     }
 
     vnode.isRootInsert = !nested // for transition enter check
+    // 执行组件创建的逻辑
     if (createComponent(vnode, insertedVnodeQueue, parentElm, refElm)) {
       return
     }
@@ -744,7 +755,16 @@ export function createPatchFunction (backend) {
         }
 
         // replacing existing element
+        // 这行代码获取了之前虚拟 DOM 节点 oldVnode 的真实 DOM 元素（elm 属性），并将其赋值给 oldElm 变量。
+        // elm 属性通常用于存储虚拟 DOM 对应的真实 DOM 元素。
         const oldElm = oldVnode.elm
+        // 这行代码使用 nodeOps 中的 parentNode 方法，传入之前的真实 DOM 元素 oldElm，获取其父级元素（parentNode），并将结果赋值给 parentElm 变量
+        /**
+         * 获取之前虚拟 DOM 节点 oldVnode 对应的真实 DOM 元素，并进一步获取该元素的父级元素。
+         * 它可能在虚拟 DOM 更新过程中用于处理节点的移动操作，即从旧位置移到新位置。
+         * 通过比较新旧虚拟 DOM 树，找出需要更新的部分，并在适当的时候将节点移动到正确的位置，
+         * 从而实现高效的 DOM 更新。
+         */
         const parentElm = nodeOps.parentNode(oldElm)
 
         // create new node

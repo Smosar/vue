@@ -65,6 +65,9 @@ export function isRegExp (v: any): boolean {
 
 /**
  * Check if val is a valid array index.
+ * - 这段代码用于判断传入的值 val 是否为有效的数组索引。它通过将 val 转换为数值类型，
+ * 并检查是否为非负整数且为有限数值，来判断是否是有效的数组索引。
+ * - 这种函数在处理数组操作时非常有用，可以帮助避免出现无效的数组索引访问
  */
 export function isValidArrayIndex (val: any): boolean {
   const n = parseFloat(String(val))

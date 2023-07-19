@@ -44,9 +44,17 @@ const componentVNodeHooks = {
       const mountedNode: any = vnode // work around flow
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
+      /**
+       * vnode 是一个虚拟 DOM 节点（VNode）。在 Vue.js 中，虚拟 DOM 是一个轻量级的 JavaScript 对象，用于表示真实 DOM 的结构和状态。
+       * componentInstance 是一个用于存储组件实例的属性。在 Vue.js 中，当一个组件渲染时，会创建一个对应的组件实例，并将其存储在 componentInstance 属性中。
+       * createComponentInstanceForVnode 函数被调用，并将返回的组件实例赋值给 vnode.componentInstance 属性。这样，vnode 就有了一个指向其对应组件实例的引用。
+       * 最后，将 vnode.componentInstance 赋值给 child 变量。此时，child 变量持有了 vnode 对应的组件实例，可以在后续的操作中使用。
+       *     这段代码用于创建组件实例，并将组件实例与 vnode 关联起来。通过 vnode.componentInstance 属性，
+       *     可以访问到与 vnode 相关联的组件实例，从而实现对组件的操作和管理。这是 Vue.js 实现组件化的核心机制之一。
+       */
       const child = vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
-        activeInstance
+        activeInstance // 它是 vm
       )
       child.$mount(hydrating ? vnode.elm : undefined, hydrating)
     }
@@ -98,7 +106,7 @@ const componentVNodeHooks = {
 
 const hooksToMerge = Object.keys(componentVNodeHooks)
 
-export function createComponent (
+export function createComponent (0
   Ctor: Class<Component> | Function | Object | void,
   data: ?VNodeData,
   context: Component,
@@ -109,11 +117,19 @@ export function createComponent (
     return
   }
 
-  const baseCtor = context.$options._base
+  // 这其实就是Vue。在 global-api/index.js --- Vue.options._base = Vue
+  const baseCtor = context.$options._base 
 
   // plain options object: turn it into a constructor
   if (isObject(Ctor)) {
-    Ctor = baseCtor.extend(Ctor)
+    /**
+     * extend 方法用于创建一个子组件构造函数，它会继承 baseCtor（父组件）的功能，并且可以添加额外的配置和选项。
+     * 该用法允许开发者使用一个普通对象来定义组件配置，然后通过 extend 方法将其转换为 Vue 组件，从而能够在 Vue 应用中使用
+     * 这段代码是在判断 Ctor 是否为一个普通对象，如果是，则通过 baseCtor.extend(Ctor) 将其转换为 Vue 组件构造函数，以便在 Vue 应用中使用。
+     *    通常这种用法可以用于动态组件定义或者其他高级用例，不是常规的组件定义方式。
+     *    具体的 extend 方法实现可以在 Vue.js 的源码中的 global-api 文件夹下找到
+     */
+    Ctor = baseCtor.extend(Ctor) // 需要在global-api文件夹下找extend方法
   }
 
   // if at this stage it's not a constructor or an async component factory,

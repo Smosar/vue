@@ -48,6 +48,8 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
     // microtask queue but the queue isn't being flushed, until the browser
     // needs to do some other work, e.g. handle a timer. Therefore we can
     // "force" the microtask queue to be flushed by adding an empty timer.
+    // 根据当前环境是否是 iOS 系统，决定是否调用 setTimeout 函数，但在 setTimeout 中执行的回调函数是一个空操作，即没有任何实际动作。
+    // 这种代码可能是用于在某些特定环境下做一些优化或占位操作，或者是用于处理特殊情况的边界条件
     if (isIOS) setTimeout(noop)
   }
   isUsingMicroTask = true
@@ -84,9 +86,21 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
   }
 }
 
+/**
+ * - 用于在下一次 DOM 更新循环之后执行回调函数
+ * - 用于在下一次 DOM 更新循环之后执行回调函数的函数。它会将回调函数推入 callbacks 数组，
+ * 并在合适的时机调用回调函数，以确保回调函数在 DOM 更新之后被执行。如果没有传入回调函数，且当前环境支持 Promise，
+ * 则会返回一个 Promise 实例，在下一次 DOM 更新循环之后会被 resolve
+ */
 export function nextTick (cb?: Function, ctx?: Object) {
   let _resolve
+  // 将一个函数推入 callbacks 数组。callbacks 是一个全局数组，
+  // 用于存储需要在下一次 DOM 更新循环时执行的回调函数
   callbacks.push(() => {
+    /**
+     * 首先判断是否传入了回调函数 cb，如果传入了，则执行回调函数，并在执行过程中捕获可能的异常，并通过 handleError 函数处理异常。
+     * 如果未传入回调函数 cb，则检查是否存在 _resolve，如果存在，则执行 _resolve(ctx)。这通常是在使用 Promise 的情况下
+     */
     if (cb) {
       try {
         cb.call(ctx)
@@ -97,12 +111,16 @@ export function nextTick (cb?: Function, ctx?: Object) {
       _resolve(ctx)
     }
   })
+  // 检查是否有未处理的回调函数。如果没有，将 pending 设置为 true，表示有待处理的回调函数
   if (!pending) {
     pending = true
+    // 是一个异步函数或定时器，用于在当前执行栈的任务执行完毕后，进入下一个事件循环时执行回调函数
     timerFunc()
   }
   // $flow-disable-line
+  // 如果没有传入回调函数 cb，且当前环境支持 Promise，则返回一个 Promise 实例，该 Promise 在下一次 DOM 更新循环之后会被 resolve
   if (!cb && typeof Promise !== 'undefined') {
+    // 创建一个 Promise 实例，并将其 resolve 函数赋值给 _resolve。在回调函数中，如果没有传入回调函数 cb，将执行 _resolve(ctx)
     return new Promise(resolve => {
       _resolve = resolve
     })

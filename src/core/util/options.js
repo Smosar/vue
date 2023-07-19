@@ -446,6 +446,14 @@ export function mergeOptions(
  * This function is used because child instances need access
  * to assets defined in its ancestor chain.
  */
+/**
+ * 
+ * @param {*} options 是一个对象，用于表示组件或指令的选项。在 Vue.js 中，组件和指令的选项通常包含在组件的配置对象（options）中，包括 components 和 directives 等。
+ * @param {*} type 是一个字符串，用于表示资源的类型，即 'components' 或 'directives'
+ * @param {*} id 是一个字符串，用于表示要解析的组件或指令的名称
+ * @param {*} warnMissing 是一个可选的布尔值参数，用于控制是否在解析失败时发出警告。在开发环境中，可以通过将其设置为 true 来启用警告
+ * @returns 用于解析 Vue 组件或指令。它根据传入的 id，在给定的 options 对象中找到对应的组件或指令，并返回解析结果。如果解析失败且开启了警告
+ */
 export function resolveAsset(
   options: Object,
   type: string,
@@ -457,13 +465,18 @@ export function resolveAsset(
     return;
   }
   const assets = options[type];
-  // check local registration variations first
-  if (hasOwn(assets, id)) return assets[id];
+  // check local registration variations first 本地注册变化优先
+  if (hasOwn(assets, id)) return assets[id]; // 找到了对应的组件或指令，解析成功
+  // camelize 是一个函数，用于将字符串转换为驼峰命名。
+  // 将 id 转换为驼峰命名，例如将 'my-component' 转换为 'myComponent'
   const camelizedId = camelize(id);
   if (hasOwn(assets, camelizedId)) return assets[camelizedId];
+  // capitalize 是一个函数，用于将字符串首字母大写。将 camelizedId 的首字母大写，
+  // 例如将 'myComponent' 转换为 'MyComponent'
   const PascalCaseId = capitalize(camelizedId);
   if (hasOwn(assets, PascalCaseId)) return assets[PascalCaseId];
   // fallback to prototype chain
+  // 如果前面的尝试都未找到对应的组件或指令，将使用 id、camelizedId 和 PascalCaseId 依次尝试从 assets 中获取对应的值，并将其保存在 res 变量中
   const res = assets[id] || assets[camelizedId] || assets[PascalCaseId];
   if (process.env.NODE_ENV !== "production" && warnMissing && !res) {
     warn("Failed to resolve " + type.slice(0, -1) + ": " + id, options);

@@ -80,6 +80,7 @@ Vue.prototype.$mount = function (
       }
     }
   }
+  // 这里面的this是指 vue 实例
   return mount.call(this, el, hydrating)
 }
 
